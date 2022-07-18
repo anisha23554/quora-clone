@@ -1,3 +1,4 @@
+import React from 'react';
 import {
     Flex,
     Box,
@@ -9,25 +10,19 @@ import {
     Link,
     Button,
     Heading,
-    Text,
-    useColorModeValue,
   } from '@chakra-ui/react';
 
-import { useState,useEffect } from 'react';
-import loginUser from "../actions/auth/loginUser"
+import { useState} from 'react';
+import loginuser from '../functions/loginuser';
 import { useDispatch } from 'react-redux';
-import { useSelector } from 'react-redux';
 
-  export default function SimpleCard() {
+export default function SimpleCard() {
     const [email,setemail] = useState('')
     const [password,setpassword] = useState('')
     const dispatch = useDispatch()
-    const {token} = useSelector(state=>state.Auth);
 
     const handleLogin = ()=>{
-       const action = loginUser(email,password);
-       dispatch(action);
-       console.log(token)
+       dispatch(loginuser(email,password))
     }
       return <Flex
     minH={'100vh'}

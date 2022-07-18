@@ -1,67 +1,58 @@
-import {
-    Modal,
-    ModalOverlay,
-    ModalContent,
-    ModalHeader,
-    ModalFooter,
-    ModalBody,
-    ModalCloseButton,
-  } from '@chakra-ui/react'
-import React from 'react'
+import React, { useState } from 'react'
 import {
          Button,
          FormControl,
          Input,
          useDisclosure,
          Image,
-         Flex 
-        } 
+         Flex ,
+         Modal,
+    ModalOverlay,
+    ModalContent,
+    ModalHeader,
+    ModalFooter,
+    ModalBody,
+    ModalCloseButton,
+    Box,
+    toast,
+    Textarea,
+  } 
 from '@chakra-ui/react'
-import { useState } from 'react'
 import { useSelector } from 'react-redux'
-import loadAnswer from '../actions/quesAns/loadAnswer'
-import { useDispatch } from 'react-redux'
+import postAnswer from '../functions/postAnswer'
+import {useToast} from '@chakra-ui/react'
 
 export default function AnswerToTheQuestion(props) {
-    // props: {ques:content}
-    const { isOpen, onOpen, onClose } = useDisclosure()
-    
-    const initialRef = React.useRef()
-    const finalRef = React.useRef()
-    const [answerContent,setAnswerContent] = useState("") 
-    const {userId} = useSelector(state=>state.Auth)
-    const dispatch = useDispatch()
+  const { isOpen, onOpen, onClose } = useDisclosure()
+  const initialRef = React.useRef(null)
+  const finalRef = React.useRef(null)
 
-    const handleSubmitAnswer = ()=>{
-      // Adding the answer obj to the user
-      const today =  new Date()
-      const date = today.getDate()+"-"+today.getMonth()+1+"-"+today.getFullYear()
-      const answer = {
-        userId:userId,
-        content:answerContent,
-        date:date,
-        isAnonymous:false
-      }
-      const users = JSON.parse(localStorage.getItem("users"))
-      users.forEach(user => {
-         if(user.userId === userId){
-           user.answersPosted = [...user.answersPosted,answer]
-         }
-      });
-      localStorage.setItem("users",JSON.stringify(users))   
-      const questions = JSON.parse(localStorage.getItem("Questions"))
-      questions.forEach(question=>{
-         if(question.content === props.ques){
-            question.answers = [...question.answers,answer]
-         }
-      })
-      localStorage.setItem("Questions",JSON.stringify(questions))
-      dispatch(loadAnswer())
-      setAnswerContent("")
+  const [answerContent,setAnswerContent] = useState('')
+  const {Auth} = useSelector(state=>state)
+  const userId = Auth.user._id 
+  const questionId = props.question._id
+  const toast = useToast()
+   
+  const handleSubmit = async()=>{
+        const res = await postAnswer(userId,questionId,answerContent)
+        if(res.status==="SUCCESS"){
+          console.log(res.answer)
+          toast({
+            status:'success',
+            title:res.message,
+            position:'top'
+          })
+        }
+        else{
+          toast({
+            status:'error',
+            title:res.message,
+            position:'top'
+          })
+        }
     }
-     
     return (
-      <>
+      <Box>
         <Button onClick={onOpen} fontSize={13} background={'none'}>
             <Flex alignItems={'center'} flexDirection="column">
               <Image 
@@ -80,22 +71,25 @@ export default function AnswerToTheQuestion(props) {
         >
           <ModalOverlay />
           <ModalContent>
-            <ModalHeader>{props.ques}</ModalHeader>
+            <ModalHeader>{props.question.content}</ModalHeader>
             <ModalCloseButton />
             <ModalBody pb={6}>
               <FormControl>
-                <Input value={answerContent} onChange={(e)=>{setAnswerContent(e.target.value)}} ref={initialRef} fontSize={20} placeholder='Your Answer here..' h={100} />
+                <Textarea value={answerContent} size={'lg'}
+                onChange={(e)=>{setAnswerContent(e.target.value)}} 
+                ref={initialRef} fontSize={20} 
+                placeholder='Your Answer here..' h={100} />
               </FormControl>
             </ModalBody>
   
             <ModalFooter>
-              <Button onClick={handleSubmitAnswer} colorScheme='blue' mr={3}>
+              <Button onClick={handleSubmit} colorScheme='blue' mr={3}>
                 Submit Answer
               </Button>
               <Button onClick={onClose}>Cancel</Button>
             </ModalFooter>
           </ModalContent>
         </Modal>
-      </>
+      </Box>
     )
   }

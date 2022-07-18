@@ -6,15 +6,15 @@ import {
     VStack,
     useBreakpointValue,
     Heading,
-    Box
   } from '@chakra-ui/react';
+import React from 'react';
 import {Link as routerlink} from "react-router-dom"
   export default function WithBackgroundImage() {
     return (
       <Flex
         w={'full'}
         h={'100vh'}
-        backgroundImage={'url(https://detecta.io/sites/default/files/feature-5.png)'}
+        // backgroundImage={'url(https://detecta.io/sites/default/files/feature-5.png)'}
         backgroundSize={'cover'}
         backgroundPosition={'center center'}
         // backgroundRepeat={'no-repeat'}

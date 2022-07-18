@@ -1,6 +1,6 @@
 const initialState = {
     token:null,
-    userId:null
+    user:null
 }
 const Auth = (state=initialState,action)=>{
     const {payload,type} = action
@@ -8,6 +8,10 @@ const Auth = (state=initialState,action)=>{
         case 'LOGIN_SUCCESS':
             return payload
         case 'LOGIN_FAILED':
+            return payload
+        case 'EDIT_DESCRIPTION_SUCCESS':
+            return payload;
+        case 'EDIT_DESCRIPTION_FAILED':
             return payload
         case 'LOGOUT':
             return payload

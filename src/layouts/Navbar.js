@@ -1,4 +1,3 @@
-import { ReactNode } from 'react';
 import {
   Box,
   Flex,
@@ -13,20 +12,22 @@ import {
   MenuItem,
   MenuDivider,
   useDisclosure,
-  useColorModeValue,
   Stack,
   Input,
   Text,
-  Heading
+  Heading,
+  StylesProvider
 } from '@chakra-ui/react';
-import { HamburgerIcon, CloseIcon} from '@chakra-ui/icons';
-import { Link as routerLink } from 'react-router-dom';
+import React from 'react';
+import { HamburgerIcon, CloseIcon,SearchIcon} from '@chakra-ui/icons';
+import { Link as routerLink, Navigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'react-redux';
-import { urlencoded } from 'express';
+import { useState } from 'react';
+import getSearchResult from '../functions/getSearchResult';
 
-const Links = ['Home', 'Answer', 'Q/A'];
-const routes = ['/home','/Answer','/QuestionAns']
+const Links = ['Ask', 'Answer', 'home'];
+const routes = ['/Ask','/Answer','/home']
 
 
 const NavLink = ({ children }: { children: ReactNode }) => (
@@ -35,37 +36,57 @@ const NavLink = ({ children }: { children: ReactNode }) => (
     py={1}
     rounded={'md'}
     _hover={{
-     color:'cyan'
+     color:'white',
+     bg:'black'
     }}
+    fontSize={16}
+    fontWeight={500}
     as={routerLink}
     to={routes[Links.indexOf(children)]}>
-      {children}
+    {children}
   </Link>
 );
 
 export default function Navbar() {
   const dispatch = useDispatch();
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const {userId} = useSelector(state=>state.Auth);
-  let firstName;
-  if(userId){
-    const users = JSON.parse(localStorage.getItem("users"))
-    const user = users.find(user=>user.userId === userId)
-    firstName=user.firstName
+
+  const {Questions} = useSelector(state=>state)
+  const questions = Questions.questions
+ 
+  const [searchContent,setSearchContent] = useState('')
+  
+  const handleSearch = async()=>{
+     const response = await getSearchResult(questions,searchContent)
+     if(response.status==='FAILED'){
+      console.log(response.message)
+     }
+     else{
+       dispatch({
+        type:'SEARCH_QUERY',
+        payload:{search:true,searchResult:response}
+       })
+     }
+     setSearchContent('')
   }
-  else{
-     firstName=null
+  const {Auth} = useSelector(state=>state)
+  const token = Auth.token
+  var username
+  if(token){
+     username = Auth.user.firstName+" "+Auth.user.lastName
   }
   const handleLogout = ()=>{
     const action = {
-      payload:{token:null,userId:null},
+      payload:{token:null,user:null},
       type:'LOGOUT'
     }
     dispatch(action);
   }
   return (
     <>
-      <Box color={'black'} px={4} 
+    <Box bg={token?'black':'none'}>
+      
+      <Box color={'black'} px={2} 
        >
         <Flex h={20} alignItems={'center'} justifyContent={'space-between'}>
           <IconButton
@@ -75,36 +96,43 @@ export default function Navbar() {
             display={{ md: 'none' }}
             onClick={isOpen ? onClose : onOpen}
           />
-          {userId&&<Heading fontSize={30}>Quora</Heading>}
-          <HStack alignItems={'center'} position={'absolute'} left={'44%'}>
+          {token&&<Heading fontSize={26} ml={5} color={'white'}>Quora</Heading>}
+          {token&&<HStack alignItems={'center'} position={'absolute'} left={'44%'}>
             <HStack
+              mt={40}
               as={'nav'}
               spacing={2}
-              display={{ base: 'none', md: 'flex' }}>
-              {Links.map((link) => (
+              display={{ base: 'none', md: 'flex' }}
+              color={'blue.600'}>
+              {
+                Links.map((link) => (
                 <NavLink key={link}
-                // _hover={{bg:'none'}}
                 >{link}
                 </NavLink>
-              ))}
+                //  <Text color={'blue'}>{link}</Text>
+              ))
+              }
             </HStack>
           </HStack>
+          }
           <Flex alignItems={'center'}>
-            <Menu>
+            {/* <Menu> */}
               { 
-                userId&&
-                 <Flex>
-                  <Input rounded={5} type="text" w={300} bg={'white'} h={8} color={'black'}
+                token&&
+                 <Flex mr={10} alignItems={'center'}>
+                  <Input 
+                   onChange={(e)=>{setSearchContent(e.target.value)}}
+                   value={searchContent} rounded={5} type="text" w={300} bg={'white'} h={8} color={'black'}
                    placeholder='Search Your Queries here..'></Input>
-                   {/* <SearchIcon /> */}
+                   <Button h={7} bg={'white'} color={'gray.400'}
+                     onClick={handleSearch}>
+                    <SearchIcon/>
+                   </Button>
                  </Flex>
               } 
+              <Menu>
               {/* {(userId===null)&&<Link as={routerLink} to="/login" color={'white'}>Login</Link>} */}
-             {
-               (userId)&&<Button m={5} h={8} width={150} as={routerLink} to="/signup"
-                bg={'whitesmoke'} color={'black'}>Sign Up</Button>
-             }
-              {  userId &&
+              {  token &&
                   <Flex flexDirection={'column'} justifyContent={'space-between'}>
                   <MenuButton
                    as={Button}
@@ -119,7 +147,7 @@ export default function Navbar() {
                    } 
                    /> 
                  </MenuButton>
-                 <Text fontSize={13}>{firstName}</Text>
+                 <Text fontSize={13} m={1} color={'white'}>{username}</Text>
                  </Flex>
               }
               <MenuList color={'black'}>
@@ -127,6 +155,7 @@ export default function Navbar() {
                 <MenuDivider></MenuDivider>
                 {/* <MenuItem>Q/A by me</MenuItem> */}
                 <MenuItem onClick={handleLogout}>Logout</MenuItem>
+                <MenuItem as={routerLink} to={"/signup"}>Add another account</MenuItem>
               </MenuList>
             </Menu>
           </Flex>
@@ -141,6 +170,7 @@ export default function Navbar() {
           </Box>
         ) : null}
       </Box>
-    </>
+    </Box>
+   </>
   );
 }

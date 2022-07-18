@@ -14,32 +14,43 @@ import {
     useColorModeValue,
     Link,
   } from '@chakra-ui/react';
+  import React from 'react';
   import { useState } from 'react';
   import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons';
-  import {signupUser} from "../actions/auth/signupUser"
-  import { useNavigate } from 'react-router-dom';
   import { Link as routerLink } from 'react-router-dom';
-
-  export default function SignupCard() {
+  import signupuser from "../functions/signupuser"
+  import { useToast } from "@chakra-ui/react";
+   
+  const Signup = ()=> {
     const [showPassword, setShowPassword] = useState(false);
     const [firstName,setfName] = useState('')
     const [lastName,setlName] = useState('')
     const [email,setemail] = useState('')
     const [password,setPassword] = useState('')
+    const toast = useToast()
 
-    const navigate = useNavigate();
-
-    const handleSignup = ()=>{
-        console.log(signupUser(firstName,lastName,email,password))
-        const {signup,message} = signupUser(firstName,lastName,email,password)
-        if(signup){
-          navigate("/login");
+    const handleSignup = async()=>{
+        const res = await signupuser(firstName,lastName,email,password)
+        console.log(res)
+        if(res.status === 'SUCCESS'){
+           toast({
+            status:"success",
+            title:res.message,
+            position:'top'
+           })
         }
-        console.log(message)
+        else{
+          toast({
+            status:"error",
+            title:res.message,
+            position:'top'
+          })
+        }
+
     }
     return (
       <Flex
-        minH={'100vh'}
+        minH={'90vh'}
         align={'center'}
         justify={'center'}
         bg={'blue.700'}>
@@ -112,3 +123,4 @@ import {
       </Flex>
     );
   }
+export default Signup

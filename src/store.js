@@ -1,11 +1,10 @@
-import 'redux'
-import 'react-redux'
+import {configureStore} from '@reduxjs/toolkit'
+import {composeWithDevTools} from 'redux-devtools-extension'
+import root from './reducers/root'
 
-import { createStore } from "redux";
-import { composeWithDevTools } from "redux-devtools-extension";
-import combinedReducer from './reducers/combinedReducer';
-
-const initialState = {}
-const store = createStore(combinedReducer,initialState,composeWithDevTools())
+const store = configureStore({
+    reducer:root,
+    composeWithDevTools
+})
 
 export default store

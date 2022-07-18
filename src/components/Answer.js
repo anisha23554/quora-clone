@@ -1,18 +1,18 @@
 import { useSelector } from "react-redux";
-import AddQuestion from "./AddQuestion";
-import { Flex, Heading } from "@chakra-ui/react";
+import DisplayQuestion from "./DisplayQuestion";
+import { Flex } from "@chakra-ui/react";
+import React from "react";
 
-
-const Answer = () => {
+const Answer = () => { 
     const {questions} = useSelector(state=>state.Questions) 
-    return (<>
-       <Heading fontSize={20} color={'red.700'} textAlign={'center'} m={5}>Questions for you</Heading>
-       <Flex flexDirection={'column'} alignItems={'center'}>
+    return (<React.Fragment>
+       {/* <Heading fontSize={20} color={'red.700'} textAlign={'center'} mt={10}>Questions for you</Heading> */}
+       <Flex flexDirection={'column'} alignItems={'center'} mt={55}>
        {
-           questions.map(question=><AddQuestion data={question}/>)
+           questions.map(question=><DisplayQuestion data={question}/>)
        }
        </Flex>
-    </>);
+    </React.Fragment>);
 }
  
 export default Answer
